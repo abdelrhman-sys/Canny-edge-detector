@@ -4,11 +4,17 @@ A C++ implementation of the Canny Edge Detection algorithm designed to run on a 
 
 ## Current Progress
 - [x] Phase 1: Bare-Metal Environment Setup & Makefile
-- [x] Phase 2.1: Raw Image I/O (via `stdin` and `stdout`)
-- [x] Phase 2.2: Gaussian Blur Kernel
-- [x] Phase 2.3: Sobel Filter (Gradients & Magnitude)
-- [ ] Phase 2.4: Non-Maximum Suppression (Thinning)
-- [ ] Phase 2.5: Hysteresis Thresholding
+- [x] Phase 2: Complete Scalar Canny Pipeline
+  - [x] 2.1: Raw Image I/O
+  - [x] 2.2: Gaussian Blur Kernel
+  - [x] 2.3: Sobel Gradients (SoA)
+  - [x] 2.4: Magnitude (Two-Pass Normalization)
+  - [x] 2.5: Direction (Integer Cross-Multiplication)
+  - [x] 2.6: Non-Maximum Suppression (Thinning)
+  - [x] 2.7: Hysteresis Thresholding
+- [ ] Phase 3: Host and QEMU Testing
+- [ ] Phase 4: Profiling & Bottleneck Analysis
+- [ ] Phase 5: RVV Intrinsic Optimization (Vectorization)
 
 ## How to View Results
 Since we are working with raw binary data, use the provided Python script to convert the output to a viewable PNG:
