@@ -1,1 +1,10 @@
-googletest/
+googletest
+*.png 
+.venv
+
+# Compiled Executables
+canny_*
+rvv_test
+
+# Generated Output Images
+test_output*.raw

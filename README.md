@@ -11,7 +11,7 @@ A C++ implementation of a Canny Edge Detection pipeline designed to run on a bar
   - [x] 2.4: Gradient Magnitude (Two-Pass L1 Norm Normalization)
   - [x] 2.5: Gradient Direction (Integer Cross-Multiplication)
 - [ ] Phase 3: Testing (Host and QEMU-Side)
-- [ ] Phase 4: Compiler Optimization Sweep
+- [x] Phase 4: Compiler Optimization Sweep
 - [ ] Phase 5: Profiling
 - [ ] Phase 6: RVV Intrinsic Optimization
 

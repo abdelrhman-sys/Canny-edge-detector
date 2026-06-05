@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <chrono>
+#include <time.h>
 
 // Phase 2.2: 5x5 Gaussian Blur (Sum = 273)
 void gaussian_blur(const uint8_t* input, uint8_t* output, int width, int height) {
@@ -109,13 +110,30 @@ int main() {
         compute_magnitude(img_gx, img_gy, img_mag, width, height);
         compute_direction(img_gx, img_gy, img_dir, width, height);
         
-        // Output magnitude for visual verification
+        // Output magnitude for visual verification (goes to test_output.raw)
         fwrite(img_mag, 1, num_pixels, stdout);
         
     } else {
         std::cerr << "Failed to read image." << std::endl;
     }
 
+    // --- MEASURE TIME BEFORE FREEING MEMORY ---
+    struct timespec start, end;
+    clock_gettime(CLOCK_MONOTONIC, &start);
+
+    for(int i = 0; i < 100; i++) {
+        gaussian_blur(img_in, img_blur, width, height);
+    }
+
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    double time_taken = (end.tv_sec - start.tv_sec) * 1e9;
+    time_taken = (time_taken + (end.tv_nsec - start.tv_nsec)) * 1e-9;
+    
+    // Print using cerr so it shows on the terminal screen
+    std::cerr << "Gaussian 5x5 average time per run: " << time_taken / 100.0 << " seconds" << std::endl;
+
+    // --- FREE MEMORY AT THE VERY END ---
     free(img_in); free(img_blur); free(img_gx); free(img_gy); free(img_mag); free(img_dir);
+
     return 0;
 }
