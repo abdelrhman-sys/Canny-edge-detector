@@ -1,1 +1,4 @@
-googletest/
+googletest/host_tests
+qemu_assert_test
+host_tests
+qemu_assert_test
