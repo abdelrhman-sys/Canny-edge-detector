@@ -10,7 +10,9 @@ A C++ implementation of a Canny Edge Detection pipeline designed to run on a bar
   - [x] 2.3: Sobel Gradients (Structure of Arrays)
   - [x] 2.4: Gradient Magnitude (Two-Pass L1 Norm Normalization)
   - [x] 2.5: Gradient Direction (Integer Cross-Multiplication)
-- [ ] Phase 3: Testing (Host and QEMU-Side)
+- [x] Phase 3: Testing (Host and QEMU-Side)
+  - [x] 3.1: GoogleTest Unit Tests (Gaussian, Sobel, Magnitude) — 6/6 passing
+  - [x] 3.2: QEMU Assert Tests at VLEN=128/256/512 — 6/6 passing
 - [ ] Phase 4: Compiler Optimization Sweep
 - [ ] Phase 5: Profiling
 - [ ] Phase 6: RVV Intrinsic Optimization
