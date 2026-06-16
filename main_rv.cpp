@@ -4,6 +4,8 @@
 #include <cstring>
 #include <chrono>
 #include <time.h>
+#include <cmath>
+#include <riscv_vector.h>
 
 // Phase 2.2: 5x5 Gaussian Blur (Sum = 273)
 void gaussian_blur(const uint8_t* input, uint8_t* output, int width, int height) {
@@ -59,7 +61,7 @@ void sobel_gradients(const uint8_t* input, int16_t* gx_out, int16_t* gy_out, int
     }
 }
 
-// Phase 2.4: Gradient Magnitude (Two-Pass L1 Norm)
+// Phase 2.4: Gradient Magnitude (Two-Pass L1 Norm) - SCALAR VERSION (Kept for tests)
 void compute_magnitude(const int16_t* gx, const int16_t* gy, uint8_t* output, int width, int height) {
     int max_mag = 0;
     for (int i = 0; i < width * height; i++) {
@@ -70,6 +72,49 @@ void compute_magnitude(const int16_t* gx, const int16_t* gy, uint8_t* output, in
     for (int i = 0; i < width * height; i++) {
         int mag = abs(gx[i]) + abs(gy[i]);
         output[i] = (uint8_t)((mag * 255) / max_mag);
+    }
+}
+
+// Phase 6: Vectorized Gradient Magnitude - FAST RVV VERSION
+void compute_magnitude_rvv(const int16_t* gx, const int16_t* gy, uint8_t* output, int width, int height) {
+    int num_pixels = width * height;
+    
+    // Ask hardware for max vector length for 16-bit elements
+    size_t max_vl = __riscv_vsetvlmax_e16m1();
+    vint16m1_t v_max_accum = __riscv_vmv_v_x_i16m1(0, max_vl); 
+
+    // --- PASS 1: RVV Strip-Mining to find max magnitude ---
+    int i = 0;
+    while (i < num_pixels) {
+        size_t vl = __riscv_vsetvl_e16m1(num_pixels - i);
+        
+        vint16m1_t v_gx = __riscv_vle16_v_i16m1(&gx[i], vl);
+        vint16m1_t v_gy = __riscv_vle16_v_i16m1(&gy[i], vl);
+
+        // Absolute value hack: max(val, -val)
+        vint16m1_t v_neg_gx = __riscv_vrsub_vx_i16m1(v_gx, 0, vl); 
+        vint16m1_t v_abs_gx = __riscv_vmax_vv_i16m1(v_gx, v_neg_gx, vl);
+
+        vint16m1_t v_neg_gy = __riscv_vrsub_vx_i16m1(v_gy, 0, vl);
+        vint16m1_t v_abs_gy = __riscv_vmax_vv_i16m1(v_gy, v_neg_gy, vl);
+
+        // Add them together: mag = abs(gx) + abs(gy)
+        vint16m1_t v_mag = __riscv_vadd_vv_i16m1(v_abs_gx, v_abs_gy, vl);
+        
+        // Find the maximum value in the vector
+        v_max_accum = __riscv_vredmax_vs_i16m1_i16m1(v_mag, v_max_accum, vl);
+        
+        i += vl;
+    }
+
+    // Extract the final maximum value to standard scalar variable
+    int16_t max_mag = __riscv_vmv_x_s_i16m1_i16(v_max_accum);
+    if (max_mag == 0) max_mag = 1;
+
+    // --- PASS 2: Scalar Normalization ---
+    for (int j = 0; j < num_pixels; j++) {
+        int mag = std::abs(gx[j]) + std::abs(gy[j]);
+        output[j] = (uint8_t)((mag * 255) / max_mag);
     }
 }
 
@@ -108,7 +153,10 @@ int main() {
         // Phase 2 Pipeline
         gaussian_blur(img_in, img_blur, width, height);
         sobel_gradients(img_blur, img_gx, img_gy, width, height);
-        compute_magnitude(img_gx, img_gy, img_mag, width, height);
+        
+        // HERE: Call the new blazing-fast RISC-V Vectorized magnitude function!
+        compute_magnitude_rvv(img_gx, img_gy, img_mag, width, height);
+        
         compute_direction(img_gx, img_gy, img_dir, width, height);
         
         // Output magnitude for visual verification (goes to test_output.raw)
@@ -119,16 +167,15 @@ int main() {
     }
 
     // --- MEASURE TIME BEFORE FREEING MEMORY ---
-    struct timespec start, end;
-    clock_gettime(CLOCK_MONOTONIC, &start);
+    auto start = std::chrono::high_resolution_clock::now();
 
     for(int i = 0; i < 100; i++) {
         gaussian_blur(img_in, img_blur, width, height);
     }
 
-    clock_gettime(CLOCK_MONOTONIC, &end);
-    double time_taken = (end.tv_sec - start.tv_sec) * 1e9;
-    time_taken = (time_taken + (end.tv_nsec - start.tv_nsec)) * 1e-9;
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> diff = end - start;
+    double time_taken = diff.count();
     
     // Print using cerr so it shows on the terminal screen
     std::cerr << "Gaussian 5x5 average time per run: " << time_taken / 100.0 << " seconds" << std::endl;
