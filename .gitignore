@@ -8,3 +8,6 @@ rvv_test
 
 # Generated Output Images
 test_output*.raw
+qemu_assert_test
+host_tests
+qemu_assert_test

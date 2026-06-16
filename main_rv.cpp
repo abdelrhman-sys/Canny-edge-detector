@@ -88,6 +88,7 @@ void compute_direction(const int16_t* gx, const int16_t* gy, uint8_t* output, in
     }
 }
 
+#ifndef TESTING
 int main() {
     int width = 256, height = 256;
     int num_pixels = width * height;
@@ -137,3 +138,4 @@ int main() {
 
     return 0;
 }
+#endif
