@@ -13,7 +13,7 @@ A C++ implementation of a Canny Edge Detection pipeline designed to run on a bar
 - [x] Phase 3: Testing (Host and QEMU-Side)
   - [x] 3.1: GoogleTest Unit Tests (Gaussian, Sobel, Magnitude) — 6/6 passing
   - [x] 3.2: QEMU Assert Tests at VLEN=128/256/512 — 6/6 passing
-- [ ] Phase 4: Compiler Optimization Sweep
+- [x] Phase 4: Compiler Optimization Sweep
 - [ ] Phase 5: Profiling
 - [ ] Phase 6: RVV Intrinsic Optimization
 
