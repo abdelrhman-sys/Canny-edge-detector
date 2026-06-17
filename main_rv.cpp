@@ -4,6 +4,7 @@
 #include <cstring>
 #include <chrono>
 #include <time.h>
+#include <iomanip>
 
 // Phase 2.2: 5x5 Gaussian Blur (Sum = 273)
 void gaussian_blur(const uint8_t* input, uint8_t* output, int width, int height) {
@@ -18,12 +19,12 @@ void gaussian_blur(const uint8_t* input, uint8_t* output, int width, int height)
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
             int32_t sum = 0; // Prevent overflow during accumulation
-            
+
             for (int ky = -2; ky <= 2; ky++) {
                 for (int kx = -2; kx <= 2; kx++) {
                     int px = x + kx;
                     int py = y + ky;
-                    
+
                     // Zero-padding boundary condition
                     int16_t val = 0;
                     if (px >= 0 && px < width && py >= 0 && py < height) {
@@ -32,7 +33,7 @@ void gaussian_blur(const uint8_t* input, uint8_t* output, int width, int height)
                     sum += val * kernel[ky + 2][kx + 2];
                 }
             }
-            
+
             sum /= 273; // Normalize by the sum of the kernel
             if (sum > 255) sum = 255;
             if (sum < 0) sum = 0;
@@ -89,6 +90,14 @@ void compute_direction(const int16_t* gx, const int16_t* gy, uint8_t* output, in
 }
 
 #ifndef TESTING
+
+// Phase 5: Bare-Metal Cycle Profiler
+static inline uint64_t get_cycles() {
+    uint64_t cycles;
+    asm volatile ("rdcycle %0" : "=r" (cycles));
+    return cycles;
+}
+
 int main() {
     int width = 256, height = 256;
     int num_pixels = width * height;
@@ -111,9 +120,55 @@ int main() {
         compute_magnitude(img_gx, img_gy, img_mag, width, height);
         compute_direction(img_gx, img_gy, img_dir, width, height);
         
+
+        int iterations = 100;
+        uint64_t cycles_gaussian = 0, cycles_sobel = 0, cycles_mag = 0, cycles_dir = 0;
+        uint64_t start, end;
+
+        std::cerr << "Running hardware profiling for " << iterations << " iterations...\n";
+
+        for (int i = 0; i < iterations; i++) {
+            // Phase 2.2: Gaussian
+            start = get_cycles();
+            gaussian_blur(img_in, img_blur, width, height);
+            end = get_cycles();
+            cycles_gaussian += (end - start);
+
+            // Phase 2.3: Sobel
+            start = get_cycles();
+            sobel_gradients(img_blur, img_gx, img_gy, width, height);
+            end = get_cycles();
+            cycles_sobel += (end - start);
+
+            // Phase 2.4: Magnitude
+            start = get_cycles();
+            compute_magnitude(img_gx, img_gy, img_mag, width, height);
+            end = get_cycles();
+            cycles_mag += (end - start);
+
+            // Phase 2.5: Direction
+            start = get_cycles();
+            compute_direction(img_gx, img_gy, img_dir, width, height);
+            end = get_cycles();
+            cycles_dir += (end - start);
+        }
+
+        // Calculate total cycles and percentages
+        double total_cycles = cycles_gaussian + cycles_sobel + cycles_mag + cycles_dir;
+
+        std::cerr << "----------------------------------------\n";
+        std::cerr << "Profiling Results (Total Cycles): " << (uint64_t)total_cycles << "\n";
+        std::cerr << "----------------------------------------\n";
+        std::cerr << std::fixed << std::setprecision(2);
+        std::cerr << "Gaussian:   " << (cycles_gaussian / total_cycles) * 100.0 << "% (" << cycles_gaussian << " cycles)\n";
+        std::cerr << "Sobel:      " << (cycles_sobel / total_cycles) * 100.0    << "% (" << cycles_sobel << " cycles)\n";
+        std::cerr << "Magnitude:  " << (cycles_mag / total_cycles) * 100.0      << "% (" << cycles_mag << " cycles)\n";
+        std::cerr << "Direction:  " << (cycles_dir / total_cycles) * 100.0      << "% (" << cycles_dir << " cycles)\n";
+        std::cerr << "----------------------------------------\n";
+        
         // Output magnitude for visual verification (goes to test_output.raw)
         fwrite(img_mag, 1, num_pixels, stdout);
-        
+
     } else {
         std::cerr << "Failed to read image." << std::endl;
     }

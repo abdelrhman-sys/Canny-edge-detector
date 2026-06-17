@@ -14,7 +14,11 @@ A C++ implementation of a Canny Edge Detection pipeline designed to run on a bar
   - [x] 3.1: GoogleTest Unit Tests (Gaussian, Sobel, Magnitude) — 6/6 passing
   - [x] 3.2: QEMU Assert Tests at VLEN=128/256/512 — 6/6 passing
 - [x] Phase 4: Compiler Optimization Sweep
-- [ ] Phase 5: Profiling
+- [x] Phase 5: Profiling
+  - [x] Gaussian Blur (~78.98% execution time)
+  - [x] Sobel Gradients (~7.68% execution time)
+  - [x] Gradient Magnitude (~7.69% execution time)
+  - [x] Gradient Direction (~5.64% execution time)
 - [ ] Phase 6: RVV Intrinsic Optimization
 
 ## How to View Results
