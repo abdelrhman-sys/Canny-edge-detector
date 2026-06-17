@@ -25,6 +25,3 @@ Since we are working with raw binary data, use the provided Python script to con
 1. **Run the pipeline:** `make run`
 2. **Convert the output:** `python3 view_edges.py`
 3. **Check the result:** Open `edges.png`
-1. **Run the pipeline:** `make run`
-2. **Convert the output:** `python3 view_edges.py`
-3. **Check the result:** Open `edges.png`
