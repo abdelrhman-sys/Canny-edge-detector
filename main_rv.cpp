@@ -174,16 +174,15 @@ int main() {
     }
 
     // --- MEASURE TIME BEFORE FREEING MEMORY ---
-    struct timespec start, end;
-    clock_gettime(CLOCK_MONOTONIC, &start);
+    auto start = std::chrono::steady_clock::now();
 
     for(int i = 0; i < 100; i++) {
         gaussian_blur(img_in, img_blur, width, height);
     }
 
-    clock_gettime(CLOCK_MONOTONIC, &end);
-    double time_taken = (end.tv_sec - start.tv_sec) * 1e9;
-    time_taken = (time_taken + (end.tv_nsec - start.tv_nsec)) * 1e-9;
+    auto end = std::chrono::steady_clock::now();
+    std::chrono::duration<double> diff = end - start;
+    double time_taken = diff.count();
     
     // Print using cerr so it shows on the terminal screen
     std::cerr << "Gaussian 5x5 average time per run: " << time_taken / 100.0 << " seconds" << std::endl;

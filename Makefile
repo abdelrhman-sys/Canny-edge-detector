@@ -1,6 +1,6 @@
 # Compilers
 HOST_CXX = g++
-RV_CXX = riscv64-unknown-linux-gnu-g++
+RV_CXX = riscv64-unknown-elf-g++
 
 # Compiler Flags
 HOST_FLAGS = -O3 -std=c++17 -I$(HOME)/local_gtest/include -L$(HOME)/local_gtest/lib -lgtest -lgtest_main -pthread
