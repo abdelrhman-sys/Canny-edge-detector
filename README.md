@@ -10,16 +10,21 @@ A C++ implementation of a Canny Edge Detection pipeline designed to run on a bar
   - [x] 2.3: Sobel Gradients (Structure of Arrays)
   - [x] 2.4: Gradient Magnitude (Two-Pass L1 Norm Normalization)
   - [x] 2.5: Gradient Direction (Integer Cross-Multiplication)
-- [x] Phase 3: Testing (Host and QEMU-Side)
-  - [x] 3.1: GoogleTest Unit Tests (Gaussian, Sobel, Magnitude) — 6/6 passing
-  - [x] 3.2: QEMU Assert Tests at VLEN=128/256/512 — 6/6 passing
-- [x] Phase 4: Compiler Optimization Sweep
+- [x] Phase 3: Testing (Automated Host vs QEMU-Side Equivalence Script)
+- [x] Phase 4: Compiler Optimization Sweep (Bypassed: `-O3` already active)
 - [ ] Phase 5: Profiling
-- [ ] Phase 6: RVV Intrinsic Optimization
+- [x] Phase 6: RVV Intrinsic Optimization
+  - [x] 6.1: Vector Strip-Mining (`__riscv_vsetvl_e*`) and dynamic LMUL selection
+  - [x] 6.2: Vectorized Gaussian Blur (Fixed-point arithmetic & bit-shifting replacement for scalar division)
+  - [x] 6.3: Vectorized Sobel Gradients (Data widening `u8` to `i16` and `vsll` bit-shifting)
+  - [x] 6.4: Vectorized Magnitude (Hardware vector reduction via `vredmaxu`)
 
-## How to View Results
-Since we are working with raw binary data, use the provided Python script to convert the output to a viewable PNG:
 
-1. **Run the pipeline:** `make run`
-2. **Convert the output:** `python3 view_edges.py`
-3. **Check the result:** Open `edges.png`
+## How to Run & View Results
+Since we are working with a bare-metal environment, profiling results are printed to the terminal, and binary image data is piped into files.
+
+1. **Prepare the Image:** `python3 convert_image.py`
+2. **Compile the Binary:** `make canny_rv`
+3. **Execute via QEMU:** `make run`
+4. ** Convert the Output:** `python3 view_edges.py`
+5. **Check the result:** Open `edges.png`
