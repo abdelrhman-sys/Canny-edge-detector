@@ -19,11 +19,14 @@ A C++ implementation of a Canny Edge Detection pipeline designed to run on a bar
   - [x] Sobel Gradients (~7.68% execution time)
   - [x] Gradient Magnitude (~7.69% execution time)
   - [x] Gradient Direction (~5.64% execution time)
-- [ ] Phase 6: RVV Intrinsic Optimization
+- [x] Phase 6: RVV Intrinsic Optimization
 
-## How to View Results
-Since we are working with raw binary data, use the provided Python script to convert the output to a viewable PNG:
 
-1. **Run the pipeline:** `make run`
-2. **Convert the output:** `python3 view_edges.py`
-3. **Check the result:** Open `edges.png`
+## How to Run & View Results
+Since we are working with a bare-metal environment, profiling results are printed to the terminal, and binary image data is piped into files.
+
+1. **Prepare the Image:** `python3 convert_image.py`
+2. **Compile the Binary:** `make canny_rv`
+3. **Execute via QEMU:** `make run`
+4. ** Convert the Output:** `python3 view_edges.py`
+5. **Check the result:** Open `edges.png`
